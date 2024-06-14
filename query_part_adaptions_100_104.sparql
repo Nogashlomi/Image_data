@@ -52,6 +52,26 @@ SELECT
                   #[[> :queryFormatName input="?creator_label" output="?creator_name"]]
                   BIND(<http://sphaera.mpiwg-berlin.mpg.de/id/part/1eaef0cc-5d5d-45fb-a33c-0fe5b62add79> as ?part)
 
+  } UNION {       ?adaption a sphaera:Part_Adaption ;
+                    ecrm:P2_has_type/ecrm:P3_has_note ?adaption_type ;
+                    (ecrm:P106_is_composed_of/ecrm:P165_incorporates)|(efrbroo:R3i_realises/^efrbroo:R40i_is_representative_expression_for) ?part ;
+                      ecrm:P3_has_note ?adaption_label .
+  					 ?adaption ecrm:P1_is_identified_by ?identifier .
+          			?identifier ecrm:P2_has_type sphaera:customIdentifier ;
+          				ecrm:P3_has_note ?custom_identifier .
+
+                  OPTIONAL {
+                    ?adaption efrbroo:R17i_was_created_by/ecrm:PC01_is_domain_of/ecrm:PC02_has_range ?creator .
+                    ?creator ecrm:P48_has_preferred_identifier/ecrm:P3_has_note ?creator_label.
+                  }
+
+                  OPTIONAL {
+                    ?book ecrm:P128_carries/ecrm:P165_incorporates/ecrm:P148_has_component ?adaption .
+                  }
+                  #[[> :queryFormatName input="?creator_label" output="?creator_name"]]
+                  BIND(<http://sphaera.mpiwg-berlin.mpg.de/id/part/faaa58fa-302b-409c-b89d-8e79fe56505e> as ?part)
+    
+
   }
 
 }GROUP BY ?adaption ?adaption_label ?custom_identifier ?creator
