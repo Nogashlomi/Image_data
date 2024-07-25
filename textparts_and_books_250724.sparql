@@ -38,7 +38,7 @@ OPTIONAL{
 }
 
 OPTIONAL{
-  ?subject ((^sphaera:partlink)|(^ecrm:P15_was_influenced_by/^efrbroo:R17i_was_created_by/((^sphaera:partadaptionlink) | (^sphaera:partlink)))) ?book .
+  ?subject ((^sphaera:partlink)|(^sphaera:partadaptionlink) | (^ecrm:P15_was_influenced_by/^efrbroo:R17i_was_created_by/((^sphaera:partadaptionlink) | (^sphaera:partlink)))) ?book .
     
   ?book ecrm:P3_has_note ?book_label.
    ?book ecrm:P1_is_identified_by ?book_identifier.
@@ -62,7 +62,6 @@ OPTIONAL {
     ecrm:P102.1_has_type sphType:primary ;
     ecrm:PC02_has_range/ecrm:P3_has_note ?part_title .
 }
-
 BIND( IF(BOUND(?part_title), ?part_title, "&nbsp;") as ?title )
   FILTER (?bid < 5000)
 } GROUP BY 
