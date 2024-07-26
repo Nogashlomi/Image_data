@@ -13,7 +13,7 @@ PREFIX rs: <http://www.researchspace.org/ontology/>
 PREFIX crmDig: <http://www.ics.forth.gr/isl/CRMdig/>
 
 
-SELECT ?images ?cluster_name (GROUP_CONCAT(DISTINCT ?note; SEPARATOR=", ") as ?cks) ?book ?bid ?part_or_adaption ?part_or_adaption_label ?custom_identifier ?place (year(?begin)as ?year)
+SELECT ?images ?cluster_name (GROUP_CONCAT(DISTINCT ?note; SEPARATOR=", ") as ?cks) ?book ?bid ?part_or_adaption ?part_or_adaption_label   (GROUP_CONCAT(DISTINCT ?part_adaption_type_label; SEPARATOR=", ") as ?type_label) ?custom_identifier ?place (year(?begin)as ?year) ?flag
 WHERE {
   	
   	?cluster a sphaera:Element.
@@ -29,6 +29,25 @@ WHERE {
 		ecrm:P1_is_identified_by ?idtype.
   	?idtype ecrm:P2_has_type <http://ontologies.mpiwg-berlin.mpg.de/sphaera/customIdentifier>.
   	?idtype ecrm:P3_has_note ?bid.
+
+       OPTIONAL {
+    ?page ecrm:P2_has_type ?page_label.
+    
+    BIND(
+  IF (?page_label = <http://sphaera.mpiwg-berlin.mpg.de/id/thes/type/page-keyword/30af573a-8d8b-11ec-b7b2-acde48001122>, 'true', 	  # padding
+   
+      IF (?page_label = <http://sphaera.mpiwg-berlin.mpg.de/id/thes/type/page-keyword/30af7cec-8d8b-11ec-b7b2-acde48001122>, 'true',    # duplicate
+        IF (?page_label = <http://sphaera.mpiwg-berlin.mpg.de/id/thes/type/page-keyword/30af4ac4-8d8b-11ec-b7b2-acde48001122>, 'true', 	  # digit. artefact
+          IF (?page_label = <http://sphaera.mpiwg-berlin.mpg.de/id/thes/type/page-keyword/c2462315-61c3-4f27-8735-a49c0b18a83a>, 'true', 	  # manually added leaf
+            IF (?page_label = <http://sphaera.mpiwg-berlin.mpg.de/id/thes/type/page-keyword/a7e4685e-94a3-4c23-8314-0e95baf4b31f>, 'true', '')	  # text added by buyer
+          )
+        )
+      )
+    
+  )
+  AS ?flag
+    )
+  }
   
   
      OPTIONAL {
@@ -48,6 +67,8 @@ BIND(xsd:integer(?custom_identifier_str) as ?custom_identifier)
     (sphaera:Part)
     (sphaera:Part_Adaption)
   }
+       ?part_or_adaption ecrm:P2_has_type ?part_type .
+   ?part_type ecrm:P3_has_note ?part_adaption_type_label.
 }
   
    OPTIONAL{
@@ -57,8 +78,7 @@ BIND(xsd:integer(?custom_identifier_str) as ?custom_identifier)
         ?book ecrm:P128_carries/efrbroo:R24i_was_created_through/ecrm:P4_has_time-span/ecrm:P82a_begin_of_the_beginning ?begin.
     } 
   
-#place year
- 
   FILTER (regex(?note, '^CK_'))
   FILTER (regex(?cluster_name, '^SAC_SIL'))
-} GROUP BY ?images ?cluster_name ?book ?bid ?part_or_adaption ?part_or_adaption_label ?custom_identifier ?place ?begin
+
+} GROUP BY ?images ?cluster_name ?book ?bid ?part_or_adaption ?part_or_adaption_label ?custom_identifier ?place ?begin ?flag
