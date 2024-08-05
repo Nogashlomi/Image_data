@@ -13,7 +13,7 @@ PREFIX rs: <http://www.researchspace.org/ontology/>
 PREFIX crmDig: <http://www.ics.forth.gr/isl/CRMdig/>
 
 
-SELECT DISTINCT ?book ?label ?bid (GROUP_CONCAT(DISTINCT ?author_name; SEPARATOR=';') as ?authors) (GROUP_CONCAT(DISTINCT ?publisher; SEPARATOR=';') as ?publishers) (GROUP_CONCAT(DISTINCT ?printer; SEPARATOR=';') as ?printers) ?place (year(?begin) as ?year)
+SELECT DISTINCT ?book ?label ?bid (GROUP_CONCAT(DISTINCT ?author_name; SEPARATOR=';') as ?authors) (GROUP_CONCAT(DISTINCT ?publisher; SEPARATOR=';') as ?publishers) (GROUP_CONCAT(DISTINCT ?printer; SEPARATOR=';') as ?printers) ?place (year(?begin) as ?year) (count(distinct ?page) as ?num_pages)
 WHERE{
 	?book a sphaera:Book ;
   ecrm:P3_has_note ?label .
@@ -27,6 +27,28 @@ WHERE{
       ecrm:P3_has_note ?custom_identifier_str .
       BIND(xsd:integer(?custom_identifier_str) as ?bid)
   }
+
+    ?book efrbroo:R29i_was_reproduced_by/efrbroo:R30_produced/ecrm:P128_carries/ecrm:P106_is_composed_of ?page . 
+  
+        OPTIONAL {
+    ?page ecrm:P2_has_type ?page_label.
+    
+    BIND(
+  IF (?page_label = <http://sphaera.mpiwg-berlin.mpg.de/id/thes/type/page-keyword/30af573a-8d8b-11ec-b7b2-acde48001122>, 'true', 	  # padding
+      IF (?page_label = <http://sphaera.mpiwg-berlin.mpg.de/id/thes/type/page-keyword/30af7cec-8d8b-11ec-b7b2-acde48001122>, 'true',    # duplicate
+        IF (?page_label = <http://sphaera.mpiwg-berlin.mpg.de/id/thes/type/page-keyword/30af4ac4-8d8b-11ec-b7b2-acde48001122>, 'true', 	  # digit. artefact
+          IF (?page_label = <http://sphaera.mpiwg-berlin.mpg.de/id/thes/type/page-keyword/c2462315-61c3-4f27-8735-a49c0b18a83a>, 'true', 	  # manually added leaf
+             IF (?page_label = <http://sphaera.mpiwg-berlin.mpg.de/id/thes/type/page-keyword/a7e4685e-94a3-4c23-8314-0e95baf4b31f>, 'true', '')	  # text added by buyer
+
+          )
+        )
+      )
+
+    
+  )
+  AS ?flag
+    )
+  }
      OPTIONAL{
 	?book ecrm:P128_carries/efrbroo:R24i_was_created_through/ecrm:PC01_is_domain_of/ecrm:PC02_has_range/ecrm:P3_has_note ?publisher.
     }
@@ -39,5 +61,6 @@ WHERE{
     OPTIONAL{
         ?book ecrm:P128_carries/efrbroo:R24i_was_created_through/ecrm:P4_has_time-span/ecrm:P82a_begin_of_the_beginning ?begin.
     } 
-
+FILTER (!BOUND(?flag) || STRLEN(?flag) < 1)
+FILTER(xsd:integer(?bid) < 3000)
 } GROUP BY ?book ?label ?bid ?place ?begin 
