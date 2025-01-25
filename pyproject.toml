@@ -6,9 +6,12 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "bqplot>=0.12.44",
+    "cartopy>=0.24.1",
+    "geopandas>=1.0.1",
     "ipywidgets>=8.1.5",
     "jupyterlab>=4.3.4",
     "matplotlib>=3.10.0",
     "numpy>=2.2.1",
     "pandas>=2.2.3",
+    "practicalsparql>=0.0.6",
 ]
